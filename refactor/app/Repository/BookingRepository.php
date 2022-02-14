@@ -26,6 +26,7 @@ use Monolog\Handler\StreamHandler;
 use Illuminate\Support\Facades\Log;
 use Monolog\Handler\FirePHPHandler;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Class BookingRepository
@@ -655,18 +656,22 @@ class BookingRepository extends BaseRepository
             $next_business_time = DateTimeHelper::getNextBusinessTimeString();
             $fields['send_after'] = $next_business_time;
         }
-        $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $onesignalRestAuthKey));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        $response = curl_exec($ch);
-        $logger->addInfo('Push send for job ' . $job_id . ' curl answer', [$response]);
-        curl_close($ch);
+        // $fields = json_encode($fields);
+        $response = Http::post($url, $fields);
+        $logger->addInfo('Push send for job ' . $job_id . ' curl answer', [$response->getBody()]);
+        /** 
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $onesignalRestAuthKey));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_HEADER, FALSE);
+            curl_setopt($ch, CURLOPT_POST, TRUE);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            $response = curl_exec($ch);
+            $logger->addInfo('Push send for job ' . $job_id . ' curl answer', [$response]);
+            curl_close($ch);
+        */
     }
 
     /**
